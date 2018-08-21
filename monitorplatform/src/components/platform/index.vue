@@ -31,6 +31,14 @@
     overflow-y: auto;
 }
 .platform .el-tabs__content {
+    height: calc(100% - 55px);
     overflow: visible; 
+}
+.platform .el-tabs.el-tabs--top{
+  height: 100%;
+}
+.el-tab-pane{
+  height: 100%;
+  overflow: auto;
 }
 </style>

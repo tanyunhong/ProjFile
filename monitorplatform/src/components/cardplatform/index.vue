@@ -1,17 +1,17 @@
 <template>
-  <div class='cardplatform'>
+  <div class='cardplatform' @contextmenu='openMainMenu'>
     <div class='cardplatformpane' v-if="ok">
       <el-row>
-          <el-col :span="6" v-for="(o, index) in data" :key="index" style="padding: 0px 0px 10px 0px;" :offset="1" >
-            <div>
-              <el-card shadow="hover" class="box-card transformMove" style='box-shadow:0px 0px 10px 5px #aaa;cursor:pointer;'>
+          <el-col :span="6" v-for="(o, index) in data" :key="index" style="padding: 0px 0px 10px 0px;" 
+                :offset="1">
+            <div @contextmenu='openMainMenu($event, data[index])'>
+              <el-card shadow="hover" class="box-card /*transformMove*/" style='box-shadow:0px 0px 10px 5px #aaa;cursor:pointer;'>
                   <div slot="header" class="clearfix">
-                      <a @click='cardClick(data[index])'>{{data[index].name}}</a>
+                      <a @click='cardClick(data[index])'>{{data[index].serverName}}</a>
                       <template>
-                          <!--<span :class="data[index].status === 'UP' ? 'green-color' : 'red-color'" style='float: right;'>{{data[index].status}}</span>-->
                           <el-dropdown :hide-on-click="false"  @command='handleCommand' style="float:right">
                             <span class="el-dropdown-link">
-                              <span @click="reflush(data[index])" :class="data[index].status === 'UP' ? 'green-color' : 'red-color'" style='float: right;'>{{data[index].status}}</span>
+                              <span :class="data[index].status === 'UP' ? 'green-color' : 'red-color'" style='float: right;'>{{data[index].status}}</span>
                             </span>
                             <el-dropdown-menu slot="dropdown">
                               <el-dropdown-item v-for="(select, selectIndex) in dropdownData" :key="selectIndex" :command="dealCommad(dropdownData[selectIndex],  data[index])" >
@@ -22,40 +22,54 @@
                       </template>
                   </div>
                   <div>
-                    <div class="text item myItemClass">
-                        {{'DiskSpace' }}
-                    </div>
-                    <el-row>
-                      <el-col :span="12"><div class="grid-content bg-purple-light">Free</div></el-col>
-                      <el-col :span="12"><div class="grid-content bg-purple-light">{{data[index].DiskSpace.Free}}</div></el-col>
-                    </el-row>
-                    <el-row>
-                      <el-col :span="12"><div class="grid-content bg-purple-light">Threshold</div></el-col>
-                      <el-col :span="12"><div class="grid-content bg-purple-light">{{data[index].DiskSpace.Threshold}}</div></el-col>
-                    </el-row>
-                    <div class="text item myItemClass">
-                        {{'Memory：' + data[index].memory.data }}
-                    </div>
-                    <el-progress :stroke-width="10" :percentage="data[index].memory.proportion" color="green-color"></el-progress>
-                    <div class="text item myItemClass">
-                        {{'Heap Memory：' + data[index].HeapMemory.data }}
-                    </div>
-                    <el-progress :stroke-width="10" :percentage="data[index].HeapMemory.proportion" color="green-color"></el-progress>
+                    <updowncardcomp name="基本信息" :data="getAppInfo(data[index])"></updowncardcomp>
+                    <progresscomp name="Memory" :compare="data[index].memory.data" :proportion="data[index].memory.proportion"></progresscomp>
+                    <progresscomp name="Heap Memory" :compare="data[index].HeapMemory.data" :proportion="data[index].HeapMemory.proportion"></progresscomp>
                   </div>
+                  <el-collapse v-model="activeName" accordion>
+                    <el-collapse-item :title="'子应用(' + data[index].children.length + ')'" name="1">
+                      
+                    </el-collapse-item>
+                  </el-collapse>
               </el-card>
             </div>
           </el-col>
       </el-row>
     </div>
+    <appinfowindow :windowcfg="windowcfg" @saveCallBack="reflushAllData"></appinfowindow>
+    <context-menu ref="mainMenuRef">
+        <context-menu-item itemName="刷新" @itemClick="reflushAllData">
+            <icon name="刷新" :showContent='false'></icon>
+        </context-menu-item>
+        <context-menu-item itemName="新增应用" @itemClick="addAppInfo">
+            <icon name="新增" :showContent='false'></icon>
+        </context-menu-item>
+        <context-menu-item itemName="新增子应用" @itemClick="addChildAppInfo" :disabled="isCanDo">
+            <icon name="新增" :showContent='false' :disabled="isChildCanDo"></icon>
+        </context-menu-item>
+        <context-menu-item itemName="修改":disabled="isCanDo" @itemClick="updateAppInfo">
+            <icon name="修改" :showContent='false' :disabled="isCanDo"></icon>
+        </context-menu-item>
+        <context-menu-item itemName="删除" :disabled="isCanDo" @itemClick="deleteAppInfo">
+            <icon name="删除" :showContent='false' :disabled="isCanDo"></icon>
+        </context-menu-item>
+    </context-menu>
   </div>
 </template>
 <script>
 import Util from '../../assets/js/Util.js'
+import AppInfoWindow from './AppInfoWindow.vue'
+import progresscomp from '../common/ProgressComp'
+import updowncardcomp from '../common/UpDownCardComp'
   export default {
     data() {
       return {
          ok: false, //目的是为了渲染,不然数据填充不到
          data: {},
+         windowcfg: {showWindow: false, tag: "add", id: 0, parentId: null, title: "新增应用"},
+         isCanDo: true,
+         isChildCanDo: true,
+         activeNames: ['1'],
          dropdownData: [
                   {value: "UP", label: "UP", status: "UP"},
                   {value: "DOWN", label: "DOWN", status: "DOWN"},
@@ -74,67 +88,146 @@ import Util from '../../assets/js/Util.js'
         return "UP"
       }
     },
+    components: {"appinfowindow":AppInfoWindow, progresscomp,updowncardcomp},
     created(){
       this.getData("");
     },
     methods: {
-      //刷新数据
-      reflush(value){
-         debugger
-         if(value.status == "REFRESH"){
-           let vm = this;
-           let serverName = value.name
-           vm.$axios({
-              method: 'post',
-              url: "/reflush/" + serverName
+      /**
+      * 打开右键菜单
+      * @author 谭云洪
+      * @date 2017年09月07日09时47分
+      * @since 1.0
+      */
+      openMainMenu(event, data) {
+        if(data){
+          this.isCanDo = false
+          if(!data.parentId){
+            this.isChildCanDo = false
+          } else {
+            this.isChildCanDo = true
+          }
+        }else{ 
+          this.isCanDo = true
+          this.isChildCanDo = true
+        }
+        
+        this.windowcfg.id = data ? data.id : null
+        //打开菜单之后，选中列表上的对应的那条记录
+        this.$refs['mainMenuRef'].open(event)
+        //用.prevent的方式阻止默认行为无效，只能这么设置
+        event.preventDefault();
+        event.stopPropagation();
+      },
+      /**
+        添加应用
+       */
+      addAppInfo(){
+         this.windowcfg.tag = "add"
+         this.windowcfg.title = "新增应用"
+         this.windowcfg.showWindow = true
+      },
+      /**
+        新增子应用
+       */
+      addChildAppInfo(){
+         this.windowcfg.parentId = this.windowcfg.id
+         this.windowcfg.tag = "addChild"
+         this.windowcfg.title = "新增子应用"
+         this.windowcfg.showWindow = true
+      },
+      /**
+        修改应用
+       */
+      updateAppInfo(){
+          this.windowcfg.tag = "update"
+          this.windowcfg.title = "修改应用"
+          this.windowcfg.showWindow = true
+      },
+      /**
+        删除应用      
+       */
+      deleteAppInfo(){
+        let vm = this;
+        if(vm.windowcfg.id){
+          this.$confirm('确定要删除该应用信息吗?', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              type: 'warning'
+          }).then(() => {
+            vm.$axios({
+              method: 'get',
+              url: "/deleteAppInfo/" + this.windowcfg.id
             }).then(response => {
               if(response.status == 200){
-                 let data = eval('(' + response.data + ')')
-                 vm.ok = false
-                 vm.data[serverName] = vm.dealData(data);
-                 vm.ok = true
+                  vm.ok = false
+                  vm.getData(_ => vm.ok = true)
               }
             }, reject => {}).catch(a => {console.log(a)});
-            return;
+          }).catch(() => {});
         }
+      },
+      /**
+        刷新整个页面应用
+       */
+      reflushAllData(){
+        let vm = this
+        if(vm.windowcfg.id){
+          vm.reflushAppInfo(vm.data[vm.windowcfg.id])
+        } else {   
+          vm.ok = false
+          vm.getData(_ => vm.ok = true)
+        }
+      },
+      //刷新数据
+      reflushAppInfo(value){
+        let vm = this;
+        vm.$axios({
+          method: 'post',
+          url: "/reflush",
+          data: value
+        }).then(response => {
+          if(response.status == 200){
+              vm.ok = false
+              Object.assign(value, vm.dealData(response.data));
+              vm.ok = true
+          }
+        }, reject => {}).catch(a => {console.log(a)});
+      },
+      /**获取基本信息
+       */
+      getAppInfo(data){
+        return [
+          {name: '项目路径', value: data.projectPath},
+          {name: '项目名称', value: data.projectName},
+          {name: '域名', value: data.hostName},
+          {name: '端口', value: data.port}
+          ];
       },
       /**处理下拉数据 */
       dealCommad(selectData, instance){
         return {selectData, instance}
       },
-      /**处理数据 */
+      /**处理内存数据数据 */
       dealData(data){
-        let serverName = data.serverName;
-        let healthData = data.data.health;
-        let menData = data.data.metrics;
-        
-        let free = "0",threshold = "0";
-        if (healthData && healthData != "null"){
-          free = Util.transformDataType(healthData.diskSpace.free);
-          threshold = Util.transformDataType(healthData.diskSpace.threshold);
-        }
-
         let men = "0", useMem = "0", menProportion = 0;
         let heap = "0", useheap = "0", heapProportion = 0;
-        if (menData && menData != "null"){
-          men = Util.transformDataTypeByKB(menData.mem); //总内存
-          let useMenNum = menData.mem - menData['mem.free']; //已用内存
+        if (data.jsonData && data.jsonData != "{}"){
+          let jsonData = eval('(' + data.jsonData + ')')
+          men = Util.transformDataTypeByKB(jsonData.mem); //总内存
+          let useMenNum = jsonData.mem - jsonData['mem.free']; //已用内存
           useMem = Util.transformDataTypeByKB(useMenNum);
-          menProportion = Util.dealProportion(useMenNum, menData.mem); //内存使用百分比
+          menProportion = Util.dealProportion(useMenNum, jsonData.mem); //内存使用百分比
 
-          heap = Util.transformDataTypeByKB(menData['heap.committed']);
-          useheap = Util.transformDataTypeByKB(menData['heap.used']);
-          heapProportion = Util.dealProportion(menData['heap.used'], menData['heap.committed']); //内存使用百分比
+          heap = Util.transformDataTypeByKB(jsonData['heap.committed']);
+          useheap = Util.transformDataTypeByKB(jsonData['heap.used']);
+          heapProportion = Util.dealProportion(jsonData['heap.used'], jsonData['heap.committed']); //内存使用百分比
         }
 
-       return {
-          name: serverName, 
-          memory: {data: '('+useMem+' / '+men+')', proportion: menProportion},
-          HeapMemory: {data: '('+useheap+' / '+heap+')', proportion: heapProportion}, 
-          DiskSpace: {Free: free, Threshold: threshold}, 
-          status: data.status, 
-          version: 'wu'
-        }
+       return Object.assign(data, {
+          memory: {data: useMem + ' / ' + men, proportion: menProportion},
+          HeapMemory: {data: useheap + ' / ' + heap, proportion: heapProportion}
+        })
       },
       /**点击跳转 */
       cardClick(instance){
@@ -144,31 +237,23 @@ import Util from '../../assets/js/Util.js'
       handleCommand(val){
         let vm = this
         let requestOpre = val.selectData.value//"UP" //开启
-        let serverName = val.instance.name //服务名称
+        let id = val.instance.id //服务名称
 
         vm.$axios({
           method: 'post',
-          url: "/reload/"+serverName+"/"+requestOpre
+          url: "/reload/"+id+"/"+requestOpre
         }).then(response => {
           if(response.status == 200){
             this.$message({
-                message: val.selectData.label + '需要时间，请稍后刷新页面！',
+                message: '请稍后刷新页面！',
                 type: 'success'
               });
             vm.ok = false
-            vm.data[val.instance.name].status = "REFRESH"
+            vm.data[id].status = "REFRESH"
             vm.ok = true
             vm.$HJloading.close()
           }
         }, reject => {console.log(reject)}).catch(a => {console.log(a)});
-      },
-      /**失败数据的组织 */
-      failData(serverName){
-        return  {name: serverName, 
-          memory: {data: '0', proportion: 0}, 
-          HeapMemory: {data: '0', proportion: 0}, 
-          DiskSpace: {Free: '0', Threshold: '0'}, 
-          status: 'DOWN', version: ''}
       },
       getData(cb){
         let vm = this;
@@ -178,15 +263,14 @@ import Util from '../../assets/js/Util.js'
           url: "/main"
         }).then(response => {
             if (response.status == 200){
-              let data = eval('(' + response.data + ')')
-              for (let i = 0 ; i < data.length; i++ ) {
-                vm.data[data[i].serverName] = vm.dealData(data[i]);
-                if (i == data.length - 1){
+              for (let i = 0 ; i < response.data.length; i++ ) {
+                vm.data[response.data[i].id] = vm.dealData(response.data[i]);
+                if (i == response.data.length - 1){
                   vm.ok = true 
                 }
               }
             }
-            if(cb){
+            if(cb && typeof cb === "function"){
               cb()
             }
         }, reject => {
@@ -205,7 +289,9 @@ import Util from '../../assets/js/Util.js'
     height: 100%;
     position: absolute;
   }
-
+  .cardplatform .cardplatformpane .progresscomp .el-progress-bar__outer{
+    background-color: #ebeef5
+  }
   /*
   .cardplatform .el-row {
     margin-bottom: 3px;

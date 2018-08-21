@@ -7,7 +7,7 @@
                     <span :class="routerParam.status === 'UP' ? 'green-color' : 'red-color'">{{routerParam.status}}</span>
                 </font>
                 &nbsp;&nbsp;
-                <font style='color:white;font-size: 35px !important;'>{{routerParam.name}}</font>
+                <font style='color:white;font-size: 35px !important;'>{{routerParam.serverName}}</font>
             </el-header>
             <el-main>
              <el-tabs type="border-card"  v-model="activeName" class='detailplatformtabs'>

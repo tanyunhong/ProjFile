@@ -1,0 +1,58 @@
+/*刷新*/
+.wp-refresh-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/refresh.png') no-repeat center left;
+}
+/*刷新禁用*/
+.wp-refreshDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/refreshDisable.png') no-repeat center left;
+}
+/*新增*/
+.wp-add-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/add.png') no-repeat center left;
+}
+
+/*新增禁用*/
+.wp-addDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/addDisable.png') no-repeat center left;
+}
+
+/*删除*/
+.wp-delete-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/delete.png') no-repeat center left;
+}
+/*删除禁用*/
+.wp-deleteDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/deleteDisable.png') no-repeat center left;
+}
+/*修改*/
+.wp-edit-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/edit.png') no-repeat center left;
+}
+/*修改禁用*/
+.wp-editDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/editDisable.png') no-repeat center left;
+}

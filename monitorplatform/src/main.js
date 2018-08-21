@@ -10,6 +10,12 @@ import config from '../static/config'
 import HJload from './components/common/HJLoading/HJLoading.js'
 import axios from 'axios'
 import './assets/css/main.css'
+import './assets/css/icon.css'
+
+import ContextMenuItem from '@/components/common/context/ContextMenuItem.vue'
+import ContextMenu from '@/components/common/context/index.vue'
+
+import icon from '@/components/common/icon.vue'
 
 axios.defaults.baseURL = config.APIRoot//ProjectConfig.APIRoot
 Vue.prototype.$axios = axios
@@ -18,6 +24,9 @@ Vue.prototype.$HJloading = HJload;
 
 // 引用element组件
 Vue.use(ElementUI)
+Vue.component('context-menu', ContextMenu)
+Vue.component('context-menu-item', ContextMenuItem)
+Vue.component('icon', icon)
 
 /* eslint-disable no-new */
 new Vue({

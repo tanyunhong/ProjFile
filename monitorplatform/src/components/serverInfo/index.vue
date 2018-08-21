@@ -1,5 +1,5 @@
 <template>
-    <div class='serverInfo' v-if="ok">
+    <div class='serverInfo' v-if="ok" >
         <el-row>
             <el-col :span="12">
                 <detailpanel headata="硬盘">
@@ -139,8 +139,9 @@
                     }
                 }
         },
-        components: {detailpanel, updowncardcomp, progresscomp,labelcomp, highchart},
+        components: {detailpanel, updowncardcomp, progresscomp, labelcomp, highchart},
         methods: {
+            /**保持cpu最后一个点有提示 */
             activeLastPointToolip(chart) {
                 var points = chart.series[0].points;
                 chart.tooltip.refresh(points[points.length -1]);
