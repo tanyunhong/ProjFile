@@ -38,8 +38,8 @@ export default {
         vm.$HJloading.open("请求中...");
         axios({
           method: 'post',
-          url: '/rpcjson/' + this.instance.serverName + "/" + data.path,
-          data: {serverName: this.instance.serverName, path: data.path}
+          url: '/rpcjson/' + this.instance.id + "/" + data.path,
+          data: this.instance
         }).then(
           response => {
             vm.$HJloading.close();

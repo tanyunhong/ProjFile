@@ -256,7 +256,7 @@
         width: 70%;
         margin: 0 auto;
     }
-    .serverInfo .el-col {
+    .serverInfo > .el-col {
         padding-left: 12px;
         overflow: auto;
     }

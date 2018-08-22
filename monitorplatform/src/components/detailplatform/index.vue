@@ -3,7 +3,7 @@
         <el-container>
             <el-header>
                 <font style='color:#409EFF; font-size: 35px !important;'>
-                    <a class="el-icon-share" @click="returnToHome" style="float:left;line-height: 60px;cursor:pointer;"></a>
+                    <a class="el-icon-back" @click="returnToHome" style="float:left;line-height: 60px;cursor:pointer;"></a>
                     <span :class="routerParam.status === 'UP' ? 'green-color' : 'red-color'">{{routerParam.status}}</span>
                 </font>
                 &nbsp;&nbsp;
@@ -72,7 +72,7 @@ import jsontemp from './JSONTemp.vue'
   }
 
   /**main的高度左右宽度 */
-  main {
+  .detailplatform main {
     height: calc(100% - 130px);
     margin: 0px;
     padding: 0px;
@@ -109,6 +109,7 @@ import jsontemp from './JSONTemp.vue'
  /**设置面板高度占满外部div */
 .detailplatformtabs .el-tabs__content .el-tab-pane{
     height: 100%;
+    overflow: hidden;
  }
 
 </style>

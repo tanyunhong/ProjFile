@@ -74,6 +74,10 @@ body{
   
   /**主要布局样式 */
  .el-main {
-    background-color: #E9EEF3;
+    background-color: floralwhite;
     color: #333;
+  }
+
+  .progresscomp .el-progress-bar__outer{
+    background-color: #ebeef5;
   }

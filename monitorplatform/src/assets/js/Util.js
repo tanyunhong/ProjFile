@@ -108,5 +108,39 @@ export default {
   /**处理两个数值比较百分比 */
   dealProportion(numerator, denominator){
     return parseFloat((numerator * 100 / denominator).toFixed(1));
-  }
+  },
+  /**处理内存数据数据 */
+  dealData(data){
+    let men = "0", useMem = "0", menProportion = 0;
+    let heap = "0", useheap = "0", heapProportion = 0;
+    if (data.jsonData && data.jsonData != "{}"){
+        let jsonData = eval('(' + data.jsonData + ')')
+        men = this.transformDataTypeByKB(jsonData.mem); //总内存
+        let useMenNum = jsonData.mem - jsonData['mem.free']; //已用内存
+        useMem = this.transformDataTypeByKB(useMenNum);
+        menProportion = this.dealProportion(useMenNum, jsonData.mem); //内存使用百分比
+
+        heap = this.transformDataTypeByKB(jsonData['heap.committed']);
+        useheap = this.transformDataTypeByKB(jsonData['heap.used']);
+        heapProportion = this.dealProportion(jsonData['heap.used'], jsonData['heap.committed']); //内存使用百分比
+    }
+    let childrenObj  = {}
+    for(let item of data.children){
+        childrenObj[item.id] = item;
+    }
+    return Object.assign(data, {childrenObj,
+        Memory: {data: useMem + ' / ' + men, proportion: menProportion},
+        HeapMemory: {data: useheap + ' / ' + heap, proportion: heapProportion}
+    })
+  },
+    /**获取基本信息
+     */
+    getAppInfo(data){
+      return [
+        {name: '项目路径', value: data.projectPath},
+        {name: '项目名称', value: data.projectName},
+        {name: '访问域名', value: data.hostName},
+        {name: '服务端口', value: data.port}
+        ];
+    }
 }

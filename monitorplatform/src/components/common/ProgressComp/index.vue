@@ -25,6 +25,6 @@
 <style scope>
   /**重新设置进度条的颜色 */
   .progresscomp .el-progress-bar__outer{
-    background-color: #F2F6FC;/*rgba(70, 45, 45, 0.1);*/
+    /*background-color: #F2F6FC;gba(70, 45, 45, 0.1);*/
   }
 </style>

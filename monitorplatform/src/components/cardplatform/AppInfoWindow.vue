@@ -50,7 +50,6 @@
         },
         methods:{
             projectNameChange(value){
-                console.log(value);
                 this.formData.serverName = value;
             },
             /**
@@ -61,7 +60,7 @@
                 if(vm.windowcfg.tag == "update"){
                      vm.$axios({
                         method: 'get',
-                        url: "/findById/" + vm.windowcfg.id
+                        url: "/findById/nostatus/" + vm.windowcfg.instance.id
                         }).then(response => {
                             if(response.status == 200){
                                 Object.assign(vm.formData, response.data)
@@ -69,7 +68,7 @@
                         }, reject => {})
                         .catch(a => {console.log(a)});
                 } else if (vm.windowcfg.tag == "addChild"){
-                    vm.formData.parentId = vm.parentId
+                    vm.formData.parentId = vm.windowcfg.instance.id
                 }
             },
             saveData(){
@@ -91,7 +90,7 @@
                                 }).then(response => {
                                     if(response.status == 200){
                                         vm.cancel();
-                                        vm.$emit('saveCallBack', {id: response.data.id, tag: vm.windowcfg.tag});
+                                        vm.$emit('saveCallBack', Object.assign(response.data, {tag: vm.windowcfg.tag}));
                                     }
                                 }, reject => {})
                                 .catch(a => {console.log(a)});

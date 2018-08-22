@@ -13,7 +13,10 @@ export default new Router({
     {
       path: '/',
       name: 'platform',
-      component: platform
+      component: platform,
+      meta: {
+          keepAlive: true // 需要被缓存
+        }
     },
     {
       path: '/cardplatform',
