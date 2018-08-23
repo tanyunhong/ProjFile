@@ -1,6 +1,6 @@
 <template>
     <div class='serverInfo' v-if="ok" >
-        <el-row>
+        <el-row :gutter="20">
             <el-col :span="12">
                 <detailpanel headata="硬盘">
                     <labelcomp :data="usageData"></labelcomp>
@@ -20,7 +20,7 @@
             </el-col>
            
         </el-row>
-        <el-row>
+        <el-row :gutter="20">
              <el-col :span="12">
                 <detailpanel headata="CPU">
                    <highchart ref="cpuhighchart" :id="cpu.id" :option="cpu.option"></highchart>
@@ -58,6 +58,7 @@
             let vm = this
             return {
                     ok: true, //目的是为了渲染,不然数据填充不到
+                    isChoose: true,
                     spaceData: [{name: 'Total', value: '123G'}, {name: 'Free', value: '123G'},{name: 'Threshold', value: '322M'}],
                     usageData: [{name: "", value:""}],
                     memData: {
@@ -141,6 +142,13 @@
         },
         components: {detailpanel, updowncardcomp, progresscomp, labelcomp, highchart},
         methods: {
+            choose(){
+                if(this.isChoose){
+                    this.isChoose = false
+                } else {
+                    this.isChoose = true
+                }
+            },
             /**保持cpu最后一个点有提示 */
             activeLastPointToolip(chart) {
                 var points = chart.series[0].points;

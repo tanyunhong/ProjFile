@@ -41,7 +41,8 @@ export default {
             }
           } else {
             this.ctxVisible = false
-            this.$emit('ctx-close', this.locals)
+            //this.$emit('ctx-close', this.locals)
+            this.$emit('ctx-cancel', this.locals)
           }
         }
       )

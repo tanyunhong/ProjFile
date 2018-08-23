@@ -1,15 +1,18 @@
 <template>
-  <div class='cardplatform' @contextmenu='openMainMenu'>
-    <div class='cardplatformpane' v-if="ok">
+  <div class='cardplatform'>
+    <div class='cardplatformpane' @contextmenu='openMainMenu' v-if="ok">
       <el-row v-for='(pVal, pIndex) in appInfoData' :key="pIndex">
-          <el-col :span="6" v-for="(val, index) in pVal" :key="index" style="padding: 0px 0px 10px 0px;" 
-                :offset="1">
-            <div @contextmenu='openMainMenu($event, val)'>
-              <el-card shadow="hover" class="box-card /*transformMove*/" style='box-shadow:0px 0px 10px 5px #aaa;cursor:pointer;'>
+          <el-col :span="span" v-for="(val, index) in pVal" :ref="'parentAppInfo_' + val.id" :key="index" :offset="0" 
+                class='parentAppInfoCol'>
+              <el-card shadow="hover" class="box-card" @contextmenu.native='openMainMenu($event, val)' style='box-shadow:0px 0px 10px 5px #aaa;cursor:pointer;'>
                   <div slot="header" class="clearfix">
                       <a @click='cardClick(val)'>{{val.serverName}}</a>
                       <template>
-                          <el-dropdown :hide-on-click="false"  @command='handleCommand' style="float:right">
+                        <span class="el-dropdown-link">
+                          <span :class="val.status === 'UP' ? 'green-color' : 'red-color'" style='float: right;'>{{val.status}}</span>
+                        </span>
+                        <!--
+                          <el-dropdown :hide-on-click="false"  @command='handleCommand' style="float:right" trigger="click">
                             <span class="el-dropdown-link">
                               <span :class="val.status === 'UP' ? 'green-color' : 'red-color'" style='float: right;'>{{val.status}}</span>
                             </span>
@@ -18,25 +21,27 @@
                                 <span style='float: right;'>{{dropdownData[selectIndex].label}}</span>
                               </el-dropdown-item>
                             </el-dropdown-menu>
-                          </el-dropdown>
+                          </el-dropdown>-->
                       </template>
                   </div>
                   <updowncardcomp name="基本信息" :data="getAppInfo(val)"></updowncardcomp>
                   <div class="childAppInfo">
-                    <el-collapse v-model="activeName[pIndex * 3 + index]" accordion>
+                    <el-collapse v-model="activeName[pIndex * rowNum + index]" accordion>
                       <el-collapse-item title="内存信息" :name="'memory_' + val.id">
                         <progresscomp name="Memory" :compare="val.Memory.data" :proportion="val.Memory.proportion"></progresscomp>
                         <progresscomp name="Heap Memory" :compare="val.HeapMemory.data" :proportion="val.HeapMemory.proportion"></progresscomp>
                       </el-collapse-item>
-                      <el-collapse-item :title="'子应用(' + val.children.length + ')'" :name="'child_' + val.id">
-                          <el-row v-for="(childVal, childIndex) in val.childrenObj" :key="childIndex">
-                            <div @contextmenu='openMainMenu($event, childVal, val)'>
-                              <el-col :span="8" > <a @click="cardClick(childVal)">{{childVal.serverName}}</a>
-                              </el-col>
-                              <el-col :span="8" > <a @click="detailHandler(childVal)">{{childVal.port}}</a>
-                              </el-col>
-                              <el-col :span="8" > 
-                                <el-dropdown :hide-on-click="false"  @command='handleCommand'>
+                      <el-collapse-item :title="'子应用(' + val.children.length + ')'" :name="'child_' + val.id" class="childAppInfoCollapse">
+                          <el-row v-for="(childVal, childIndex) in val.childrenObj" :ref="'childAppInfo_' + childVal.id" 
+                            @contextmenu.native='openMainMenu($event, childVal, val)' :key="childIndex">
+                              <el-col :span="8"><a @click="cardClick(childVal)">{{childVal.serverName}}</a></el-col>
+                              <el-col :span="8"><a @click="detailHandler(childVal)">{{childVal.port}}</a></el-col>
+                              <el-col :span="8"> 
+                                <span class="el-dropdown-link">
+                                  <span :class="childVal.status === 'UP' ? 'green-color' : 'red-color'">{{childVal.status}}</span>
+                                </span>
+                                <!--
+                                <el-dropdown :hide-on-click="false"  @command='handleCommand' trigger="click">
                                   <span class="el-dropdown-link">
                                     <span :class="childVal.status === 'UP' ? 'green-color' : 'red-color'">{{childVal.status}}</span>
                                   </span>
@@ -45,21 +50,19 @@
                                       <span style='float: right;'>{{dropdownData[selectIndex].label}}</span>
                                     </el-dropdown-item>
                                   </el-dropdown-menu>
-                                </el-dropdown>
+                                </el-dropdown>-->
                               </el-col>
-                            </div>
                           </el-row>
                       </el-collapse-item>
                     </el-collapse>
                   </div>
               </el-card>
-            </div>
           </el-col>
       </el-row>
     </div>
     <appinfowindow :windowcfg="windowcfg" @saveCallBack="saveCallBack"></appinfowindow>
     <childdetailwindow :detailDialogCfg='detailDialogCfg'></childdetailwindow>
-    <context-menu ref="mainMenuRef">
+    <context-menu ref="mainMenuRef" @ctx-cancel="ctxCancel" @ctx-open="ctxOpen">
         <context-menu-item itemName="刷新" @itemClick="reflushAllData">
             <icon name="刷新" :showContent='false'></icon>
         </context-menu-item>
@@ -67,13 +70,16 @@
             <icon name="新增" :showContent='false'></icon>
         </context-menu-item>
         <context-menu-item itemName="新增子应用" @itemClick="addChildAppInfo" :disabled="isChildCanDo">
-            <icon name="新增" :showContent='false' :disabled="isChildCanDo"></icon>
+            <icon name="新增子应用" :showContent='false' :disabled="isChildCanDo"></icon>
         </context-menu-item>
         <context-menu-item itemName="修改":disabled="isCanDo" @itemClick="updateAppInfo">
             <icon name="修改" :showContent='false' :disabled="isCanDo"></icon>
         </context-menu-item>
         <context-menu-item itemName="删除" :disabled="isCanDo" @itemClick="deleteAppInfo">
             <icon name="删除" :showContent='false' :disabled="isCanDo"></icon>
+        </context-menu-item>
+        <context-menu-item v-for="(val , index) in dropdownData" :key="index" :itemName="val.label" :disabled="isCanDo" @itemClick="operaApp(val)">
+            <icon :name="val.image" :showContent='false' :disabled="isCanDo"></icon>
         </context-menu-item>
     </context-menu>
   </div>
@@ -89,7 +95,8 @@ import labelcomp from '../common/labelComp'
     data() {
       return {
          ok: true, //目的是为了渲染,不然数据填充不到
-         data: {},
+         isChoose: false,
+         rowNum: 4, //这个值要设置24的约数，否则栅格分配不均
          appInfoData: [],
          windowcfg: {showWindow: false, tag: "add", instance: null, title: "新增应用"},
          selectParentData: null,
@@ -98,15 +105,20 @@ import labelcomp from '../common/labelComp'
          isChildCanDo: true,
          activeName: [],
          dropdownData: [
-                  {value: "UP", label: "UP", status: "UP"},
-                  {value: "DOWN", label: "DOWN", status: "DOWN"},
-                  {value: "INSTALL_NT", label: "安装服务", status: "INSTALL"},
-                  {value: "UNINSTALL_NT", label: "卸载服务", status: "UNINSATLL"},
-                  {value: "START_NT", label: "开启服务", status: "UP"},
-                  {value: "STOP_NT", label: "关闭服务", status: "DOWN"}
+                  {value: "UP", label: "启动应用", status: "UP", image:"启动", tip: "启动【s%】应用"},
+                  {value: "DOWN", label: "关闭应用", status: "DOWN",image:"关闭", tip: "关闭【s%】应用"},
+                  {value: "INSTALL_NT", label: "安装服务", status: "INSTALL",image:"安装", tip: "安装【s%】应用服务"},
+                  {value: "UNINSTALL_NT", label: "卸载服务", status: "UNINSATLL",image:"卸载", tip: "卸载【s%】应用服务"},
+                  {value: "START_NT", label: "开启服务", status: "UP",image:"开启服务", tip: "开启【s%】应用服务"},
+                  {value: "STOP_NT", label: "关闭服务", status: "DOWN",image:"关闭服务",tip: "关闭【s%】应用服务"}
          ]
       }
     }, 
+    computed: {
+      span(){
+        return 24 / this.rowNum 
+      }
+    },
     filters: {
       status(status){
         if(status == 'UP'){
@@ -132,6 +144,36 @@ import labelcomp from '../common/labelComp'
       this.getAllData(cb);
     },
     methods: {
+      /**修改选择状态 */
+      choose(){
+          if(this.isChoose){
+              this.isChoose = false
+          } else {
+              this.isChoose = true
+          }
+      },
+      /**关闭右键菜单 */
+      ctxCancel(data){
+        if(data.id && data.parentId){
+          this.$refs['childAppInfo_' + data.id][0].$el.style.backgroundColor = ''
+          this.$refs['parentAppInfo_' + data.parentId][0].$el.style.transform = ''
+          this.$refs['parentAppInfo_' + data.parentId][0].$children[0].$el.style.boxShadow = 'rgb(170, 170, 170) 0px 0px 10px 5px'
+        } else if(data.id){
+          this.$refs['parentAppInfo_' + data.id][0].$el.style.transform = ''
+          this.$refs['parentAppInfo_' + data.id][0].$children[0].$el.style.boxShadow = 'rgb(170, 170, 170) 0px 0px 10px 5px'
+        }
+      },
+      /**打开右键菜单 */
+      ctxOpen(data){
+        if(data.id && data.parentId){
+          this.$refs['childAppInfo_' + data.id][0].$el.style.backgroundColor = '#C0C4CC'
+          this.$refs['parentAppInfo_' + data.parentId][0].$el.style.transform = 'scale(1.05)'
+          this.$refs['parentAppInfo_' + data.parentId][0].$children[0].$el.style.boxShadow = '#AACDF1 0px 0px 10px 5px'
+        } else if(data.id){
+          this.$refs['parentAppInfo_' + data.id][0].$el.style.transform = 'scale(1.05)'
+          this.$refs['parentAppInfo_' + data.id][0].$children[0].$el.style.boxShadow = '#AACDF1 0px 0px 10px 5px'
+        }
+      },
       /**
       * 打开右键菜单
       * @author 谭云洪
@@ -143,11 +185,9 @@ import labelcomp from '../common/labelComp'
           this.isCanDo = false
           if(!data.parentId){
             this.isChildCanDo = false
-            //this.index = data.index
             this.selectParentData = data
           } else { //
             this.isChildCanDo = true
-            //this.index = pval.index
             this.selectParentData = pval
           }
         }else{ 
@@ -157,7 +197,7 @@ import labelcomp from '../common/labelComp'
         }
         this.windowcfg.instance = data
         //打开菜单之后，选中列表上的对应的那条记录
-        this.$refs['mainMenuRef'].open(event)
+        this.$refs['mainMenuRef'].open(event, data)
         //用.prevent的方式阻止默认行为无效，只能这么设置
         event.preventDefault();
         event.stopPropagation();
@@ -245,7 +285,7 @@ import labelcomp from '../common/labelComp'
                   vm.appInfoData[0] = []
                 xLen = xLen > 0 ? xLen - 1 : 0
                 let yLen = vm.appInfoData[xLen].length
-                if(yLen == 3){
+                if(yLen == vm.rowNum){
                   vm.appInfoData[xLen + 1] = []
                   vm.appInfoData[xLen + 1][0] = d;
                 } else {
@@ -277,21 +317,32 @@ import labelcomp from '../common/labelComp'
         let vm = this
         let requestOpre = val.selectData.value//"UP" //开启
         let id = val.instance.id //服务名称
-
-        vm.$axios({
-          method: 'post',
-          url: "/reload/"+id+"/"+requestOpre
-        }).then(response => {
-          if(response.status == 200){
-            let message = '操作完成，请稍后刷新页面！'
-            let type = 'success'
-            if(response.data != 0){
-              essage = '操作失败，请检查应用信息！'
-              type = 'warning'
-            } 
-            vm.$message({message, type});
-          }
-        }, reject => {console.log(reject)}).catch(a => {console.log(a)});
+        let tip = val.selectData.tip.replace("s%", val.instance.serverName)
+        vm.$confirm('确定要'+tip+'吗?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+          vm.$axios({
+            method: 'post',
+            url: "/reload/"+id+"/"+requestOpre
+          }).then(response => {
+            if(response.status == 200){
+              let message = response.data.message
+              let type = 'success'
+              if(response.data.status != 0){
+                type = 'warning'
+              } 
+              vm.$message({message, type});
+            }
+          }, reject => {console.log(reject)}).catch(a => {console.log(a)});
+        }).catch(() => {});
+      },
+      /**
+        操作应用
+       */
+      operaApp(val){
+        this.handleCommand({selectData: val, instance: this.windowcfg.instance});
       },
       /**
         获取所有的数据
@@ -315,7 +366,7 @@ import labelcomp from '../common/labelComp'
                 vm.appInfoData[xIndex][yIndex] = d
                 //Object.assign(vm.appInfoData[xIndex][yIndex], d);
                 yIndex++;
-                if(yIndex == 3){
+                if(yIndex == vm.rowNum){
                   yIndex = 0;
                   xIndex++;
                 }
@@ -374,7 +425,7 @@ import labelcomp from '../common/labelComp'
                   y = vm.appInfoData[x].length
                   vm.appInfoData[x][y] = d
                   y++;
-                  if(y == 3){
+                  if(y == vm.rowNum){
                     y = 0;
                     x++;
                   }
@@ -400,6 +451,7 @@ import labelcomp from '../common/labelComp'
     width: 100%;
     height: 100%;
     position: absolute;
+    overflow: hidden;
   }
   .childAppInfo .el-collapse-item__content{
      padding-bottom: 5px; 
@@ -424,9 +476,10 @@ import labelcomp from '../common/labelComp'
   }
   .cardplatformpane {
     width: 100%;
+    height: 100%;
     position: absolute;
     overflow: auto;
-    padding: 30px 0px 30px 0px;
+    padding: 10px 0px 10px 0px;
   }
   .cardplatformpane .el-collapse-item__content{
     max-height: 100px;
@@ -435,5 +488,22 @@ import labelcomp from '../common/labelComp'
   /**设置手风琴 进度条的背景颜色 */
   .childAppInfo .el-collapse-item__content .progresscomp .text.item.myItemClass{
     background-color: initial;
+  }
+  .childAppInfo .el-row{
+    border-bottom: 1px solid azure;
+  }
+  .childAppInfoCollapse .el-collapse-item__content{
+    padding-bottom: 1px;
+  }
+  .cardplatformpane > .el-row{
+    padding-top: 10px;
+  }
+  .cardplatformpane > .el-row .el-col{
+    transition-duration: 0.5s;
+  }
+  .parentAppInfoCol{
+    padding-left: 15px; 
+    padding-right: 15px; 
+    padding-bottom: 20px;
   }
 </style>

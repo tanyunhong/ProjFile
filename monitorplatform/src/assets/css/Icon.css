@@ -19,7 +19,6 @@
   padding-left: 20px;
   background: url('../images/icon/add.png') no-repeat center left;
 }
-
 /*新增禁用*/
 .wp-addDisable-icon{
   width: 16px;
@@ -27,7 +26,20 @@
   padding-left: 20px;
   background: url('../images/icon/addDisable.png') no-repeat center left;
 }
-
+/*新增子应用*/
+.wp-addChild-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/addChild.png') no-repeat center left;
+}
+/*新增子应用禁用*/
+.wp-addChildDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/addDisable.png') no-repeat center left;
+}
 /*删除*/
 .wp-delete-icon{
   width: 16px;
@@ -56,3 +68,83 @@
   padding-left: 20px;
   background: url('../images/icon/editDisable.png') no-repeat center left;
 }
+/*开启*/
+.wp-start-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/start.png') no-repeat center left;
+}
+.wp-startDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/startDisable.png') no-repeat center left;
+}
+/*开启服务*/
+.wp-startServer-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/startServer.png') no-repeat center left;
+}
+.wp-startServerDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/startServerDisable.png') no-repeat center left;
+}
+/*关闭*/
+.wp-stop-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/stop.png') no-repeat center left;
+}
+.wp-stopDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/stopDisable.png') no-repeat center left;
+}
+/*关闭服务*/
+.wp-stopServer-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/stopServer.png') no-repeat center left;
+}
+.wp-stopServerDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/stopServerDisable.png') no-repeat center left;
+}
+/*安装*/
+.wp-install-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/install.png') no-repeat center left;
+}
+.wp-installDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/installDisable.png') no-repeat center left;
+}
+/**卸载*/
+.wp-uninstall-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/uninstall.png') no-repeat center left;
+}
+.wp-uninstallDisable-icon{
+  width: 16px;
+  height: 16px;
+  padding-left: 20px;
+  background: url('../images/icon/uninstallDisable.png') no-repeat center left;
+}
+
+

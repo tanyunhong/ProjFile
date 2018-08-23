@@ -58,7 +58,7 @@ import jsontemp from './JSONTemp.vue'
      }
  }
 </script>
-<style scope>
+<style>
   .detailplatform {
     height: 100%;
     margin: 0px;
@@ -80,13 +80,13 @@ import jsontemp from './JSONTemp.vue'
 
   /**tab的高度左右宽度 */
   .detailplatformtabs {
-    height: calc(100% - 10px);
+    height: calc(100% - 30px);
     margin-right: 100px;
     margin-left: 100px;
+    margin-bottom: 10px;
+    margin-top: 10px;
   }
-  .detailplatformtabpane {
 
-  }
   /**头布局样式 */
   .detailplatform .el-header {
     background-color: #606266;
@@ -99,6 +99,8 @@ import jsontemp from './JSONTemp.vue'
   .detailplatform .el-main {
     background-color: #E9EEF3;
     color: #333;
+    height: calc(100% - 80px);
+    padding: 10px;
   }
   
   /**设置content的高度 */
