@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Kendo UI Web</title>
+        <link href="styles/kendo.common.min.css" rel="stylesheet" />
+        <link href="styles/kendo.default.min.css" rel="stylesheet" />
+        <script src="js/jquery.min.js"></script>
+        <script src="js/kendo.web.min.js"></script>
+    </head>
+    <body>
+<div id="view">
+    <input data-bind="value: inputValue" />
+    <textarea data-bind="value: inputValue"></textarea>
+</div>
+<script>
+	var viewModel = kendo.observable({
+		inputValue: "Input value",
+		textareaValue: "Textarea value"
+	});
+
+	kendo.bind($("#view"), viewModel);
+	</script>
+    </body>
+</html>
