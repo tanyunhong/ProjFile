@@ -1,0 +1,15 @@
+<app-header [msg]="headermsg" [name]="'123'" (outer)="runParent($event)"></app-header>
+<p>
+  news works!
+  <br/><br/>
+
+  {{headermsg}}
+
+  <a routerLink="/newscontent/123">新闻详情页面</a>
+
+
+  <button (click)="getData()">按钮执行方法</button>
+</p>
+<li *ngFor="let item of list">
+  {{item.title}}
+</li>
